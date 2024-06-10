@@ -1,0 +1,53 @@
+/* Modal.css */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: linear-gradient(
+    to right,
+    #e2e2e2,
+    #c9d6ff
+  ); /* Gradient background */
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Box shadow for depth */
+  text-align: center;
+  z-index: 1001;
+  max-width: 400px; /* Adjust the maximum width as needed */
+  margin-left: 30px;
+  margin-right: 30px;
+}
+
+.modal-content h2 {
+  margin: 0 0 20px;
+  color: #333333; /* Dark text color */
+}
+
+.modal-content button {
+  background-color: #512da8; /* Button background color */
+  color: #fff; /* Button text color */
+  font-size: 12px;
+  padding: 10px 40px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.modal-content button:hover {
+  background-color: #311b92; /* Darker shade on hover */
+}

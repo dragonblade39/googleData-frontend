@@ -1,0 +1,123 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+}
+
+.Verificationcontainer {
+  background-color: #fff;
+  padding-top: 20px;
+  border-radius: 30px;
+  padding-right: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+  width: 300px;
+  max-width: 100%;
+  min-height: 300px;
+}
+
+.Verificationcontainer p {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+  margin: 20px 0;
+}
+
+.Verificationcontainer span {
+  font-size: 12px;
+}
+
+.Verificationcontainer .link {
+  color: #333;
+  font-size: 13px;
+  text-decoration: none;
+  margin: 15px 0 10px;
+}
+
+.Verificationcontainer button {
+  background-color: #512da8;
+  color: #fff;
+  font-size: 12px;
+  padding: 10px 40px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.Verificationcontainer button.hidden {
+  background-color: transparent;
+  border-color: #fff;
+}
+
+.Verificationcontainer form {
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 40px;
+  height: 100%;
+}
+
+.Verificationcontainer input {
+  background-color: #eee;
+  border: none;
+  margin: 8px 0;
+  padding: 10px 30px;
+  font-size: 13px;
+  border-radius: 8px;
+  width: 100%;
+  outline: none;
+}
+
+.Verificationsocial-icons {
+  margin: 20px 0;
+}
+
+.Verificationsocial-icons .link {
+  border: 1px solid #ccc;
+  border-radius: 20%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 3px;
+  width: 40px;
+  height: 40px;
+}
+
+.Verificationlink-button {
+  background: none;
+  border: none;
+  color: #3498db; /* or any color you prefer */
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.Verificationlink-button:hover {
+  color: #2980b9; /* or any color you prefer */
+}
+
+.Verificationform-container {
+  position: absolute;
+  transition: opacity 0.5s ease;
+}
+
+.Verificationerror {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.Verificationflibber-form {
+  opacity: 1;
+}
