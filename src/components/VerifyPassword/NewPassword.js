@@ -4,7 +4,6 @@ import axios from "axios";
 import Modal from "../Modal/Modal";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import Loading from "../Loading/Loading"; // Import the Loading component
 import { BACKEND_URL } from "../Constants/Constants";
 
 function NewPassword() {
@@ -13,7 +12,7 @@ function NewPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
   const email = location.state ? location.state.email : null;
 
@@ -100,38 +99,39 @@ function NewPassword() {
 
   return (
     <div>
-      {loading && <Loading />} {/* Render Loading component when loading */}
-      {!loading && (
-        <div className="Verificationcontainer" id="Verificationcontainer">
-          <div
-            className="Verificationform-container Verificationflibber-form"
-            style={{ width: "310px" }}
-          >
-            <form onSubmit={handleSubmit}>
-              <h2>Update Password</h2>
-              <p style={{ color: "red", fontSize: "15px" }}>
-                Enter New Password
-              </p>
-              <input
-                type="password"
-                placeholder="Enter New Password"
-                name="newPassword"
-                value={newPassword}
-                onChange={handleNewPasswordChange}
-              />
-              <input
-                type="text"
-                placeholder="Confirm New Password"
-                name="confirmPassword"
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-              />
-              <br />
-              <button type="submit">Verify</button>
-            </form>
-          </div>
+      <div className="Verificationcontainer" id="Verificationcontainer">
+        <div
+          className="Verificationform-container Verificationflibber-form"
+          style={{ width: "310px" }}
+        >
+          <form onSubmit={handleSubmit}>
+            <h2>Update Password</h2>
+            <p style={{ color: "red", fontSize: "15px" }}>Enter New Password</p>
+            <input
+              type="password"
+              placeholder="Enter New Password"
+              name="newPassword"
+              value={newPassword}
+              onChange={handleNewPasswordChange}
+              disabled={loading}
+              style={{ cursor: loading ? "not-allowed" : "auto" }}
+            />
+            <input
+              type="text"
+              placeholder="Confirm New Password"
+              name="confirmPassword"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              disabled={loading}
+              style={{ cursor: loading ? "not-allowed" : "auto" }}
+            />
+            <br />
+            <button type="submit" disabled={loading}>
+              {loading ? "Loading . . ." : "Verify"}
+            </button>
+          </form>
         </div>
-      )}
+      </div>
       <Modal
         show={showModal}
         message={modalMessage}

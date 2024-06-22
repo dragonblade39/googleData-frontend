@@ -4,7 +4,6 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import Modal from "../Modal/Modal";
 import { useNavigate } from "react-router-dom";
-import Loading from "../Loading/Loading"; // Import the Loading component
 import { BACKEND_URL } from "../Constants/Constants";
 function Verification() {
   const location = useLocation();
@@ -153,37 +152,38 @@ function Verification() {
 
   return (
     <div>
-      {loading && <Loading />} {/* Render Loading component when loading */}
-      {!loading && (
-        <div className="Verificationcontainer" id="Verificationcontainer">
-          <div className="Verificationform-container Verificationflibber-form">
-            <form onSubmit={handleSubmit}>
-              <h1>Verify OTP</h1>
-              <p style={{ color: "red", fontSize: "15px" }}>
-                Enter OTP sent to your mail
-              </p>
-              <input
-                type="text"
-                placeholder="Enter OTP"
-                name="otp"
-                value={otpInput}
-                onChange={handleInputChange}
-              />
-              <button type="submit">Verify</button>
-              <br />
-              <div style={{ paddingLeft: "12px", zIndex: "100" }}>
-                Didn't receive an OTP?
-                <b
-                  style={{ paddingLeft: "60px", cursor: "pointer" }}
-                  onClick={resend}
-                >
-                  Resend
-                </b>
-              </div>
-            </form>
-          </div>
+      <div className="Verificationcontainer" id="Verificationcontainer">
+        <div className="Verificationform-container Verificationflibber-form">
+          <form onSubmit={handleSubmit}>
+            <h1>Verify OTP</h1>
+            <p style={{ color: "red", fontSize: "15px" }}>
+              Enter OTP sent to your mail
+            </p>
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              name="otp"
+              value={otpInput}
+              onChange={handleInputChange}
+              disabled={loading}
+              style={{ cursor: loading ? "not-allowed" : "auto" }}
+            />
+            <button type="submit" disabled={loading}>
+              {loading ? "Loading . . ." : "Verify"}
+            </button>
+            <br />
+            <div style={{ paddingLeft: "12px", zIndex: "100" }}>
+              Didn't receive an OTP?
+              <b
+                style={{ paddingLeft: "60px", cursor: "pointer" }}
+                onClick={resend}
+              >
+                Resend
+              </b>
+            </div>
+          </form>
         </div>
-      )}
+      </div>
       <Modal
         show={showModal}
         message={verificationResult}

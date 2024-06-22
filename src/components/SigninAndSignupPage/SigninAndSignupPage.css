@@ -106,7 +106,7 @@ body {
 .link-button {
   background: none;
   border: none;
-  color: #3498db; /* or any color you prefer */
+  color: #3498db;
   cursor: pointer;
   text-decoration: underline;
   font-size: 1rem;
@@ -114,7 +114,7 @@ body {
 }
 
 .link-button:hover {
-  color: #2980b9; /* or any color you prefer */
+  color: #2980b9;
 }
 
 .form-container {
@@ -389,7 +389,7 @@ body {
   .link-button {
     background: none;
     border: none;
-    color: #3498db; /* or any color you prefer */
+    color: #3498db;
     cursor: pointer;
     text-decoration: underline;
     font-size: 1rem;
@@ -397,7 +397,7 @@ body {
   }
 
   .link-button:hover {
-    color: #2980b9; /* or any color you prefer */
+    color: #2980b9;
   }
 
   .error {

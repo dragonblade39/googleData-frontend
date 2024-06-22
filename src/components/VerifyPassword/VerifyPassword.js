@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import Modal from "../Modal/Modal";
 import { useNavigate } from "react-router-dom";
-import Loading from "../Loading/Loading"; // Import the Loading component
 import { BACKEND_URL } from "../Constants/Constants";
 
 function VerifyPassword() {
@@ -12,7 +11,7 @@ function VerifyPassword() {
   const [verificationResult, setVerificationResult] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [Otp, setOtp] = useState(location.state ? location.state.otp : null);
-  const [loading, setLoading] = useState(false); // Initial loading state to false
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const email = location.state ? location.state.email : null;
@@ -24,14 +23,12 @@ function VerifyPassword() {
   }, [email, navigate]);
 
   useEffect(() => {
-    // Prevent pinch zooming on mobile browsers
     const handleTouchStart = (event) => {
       if (event.touches.length > 1) {
         event.preventDefault();
       }
     };
 
-    // Prevent double tap zooming on mobile browsers
     let lastTouchEnd = 0;
     const handleTouchEnd = (event) => {
       const now = new Date().getTime();
@@ -61,7 +58,7 @@ function VerifyPassword() {
   };
 
   const generateOTP = async () => {
-    setLoading(true); // Set loading state to true
+    setLoading(true);
 
     const chars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -76,12 +73,12 @@ function VerifyPassword() {
     try {
       await axios.post(url, botp);
       setOtp(otp);
-      setLoading(false); // Set loading state to false
+      setLoading(false);
       setShowModal(true);
       setVerificationResult("OTP Sent Successfully!!");
     } catch (err) {
       console.log(err.message);
-      setLoading(false); // Set loading state to false
+      setLoading(false);
       setVerificationResult("Failed to send OTP. Please try again.");
       setShowModal(true);
     }
@@ -89,7 +86,7 @@ function VerifyPassword() {
 
   const resend = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading state to true
+    setLoading(true);
     await generateOTP();
   };
 
@@ -141,37 +138,38 @@ function VerifyPassword() {
 
   return (
     <div>
-      {loading && <Loading />}
-      {!loading && (
-        <div className="Verificationcontainer" id="Verificationcontainer">
-          <div className="Verificationform-container Verificationflibber-form">
-            <form onSubmit={handleSubmit}>
-              <h1>Verify OTP</h1>
-              <p style={{ color: "red", fontSize: "15px" }}>
-                Enter OTP sent to your mail
-              </p>
-              <input
-                type="text"
-                placeholder="Enter OTP"
-                name="otp"
-                value={otpInput}
-                onChange={handleInputChange}
-              />
-              <button type="submit">Verify</button>
-              <br />
-              <div style={{ paddingLeft: "12px", zIndex: "100" }}>
-                Didn't receive an OTP?
-                <b
-                  style={{ paddingLeft: "60px", cursor: "pointer" }}
-                  onClick={resend}
-                >
-                  Resend
-                </b>
-              </div>
-            </form>
-          </div>
+      <div className="Verificationcontainer" id="Verificationcontainer">
+        <div className="Verificationform-container Verificationflibber-form">
+          <form onSubmit={handleSubmit}>
+            <h1>Verify OTP</h1>
+            <p style={{ color: "red", fontSize: "15px" }}>
+              Enter OTP sent to your mail
+            </p>
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              name="otp"
+              value={otpInput}
+              onChange={handleInputChange}
+              disabled={loading}
+              style={{ cursor: loading ? "not-allowed" : "auto" }}
+            />
+            <button type="submit" disabled={loading}>
+              {loading ? "Loading . . ." : "Verify"}
+            </button>
+            <br />
+            <div style={{ paddingLeft: "12px", zIndex: "100" }}>
+              Didn't receive an OTP?
+              <b
+                style={{ paddingLeft: "60px", cursor: "pointer" }}
+                onClick={resend}
+              >
+                Resend
+              </b>
+            </div>
+          </form>
         </div>
-      )}
+      </div>
       <Modal
         show={showModal}
         message={verificationResult}
