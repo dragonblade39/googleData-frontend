@@ -4,7 +4,9 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Modal from "../Modal/Modal"; // Import the modal component
-import Loading from "../../Loading/Loading";
+import Loading from "../Loading/Loading";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 import { BACKEND_URL } from "../Constants/Constants";
 
 function SigninAndSignupPage() {
@@ -16,6 +18,7 @@ function SigninAndSignupPage() {
     name: "",
     email: "",
     password: "",
+    verified: false,
   });
   const [signInForm, setSignInForm] = useState({ email: "", password: "" });
   const [signUpErrors, setSignUpErrors] = useState({});
@@ -188,6 +191,49 @@ function SigninAndSignupPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const handleGoogleSuccess = (credentialResponse) => {
+    setLoading(true);
+    const decoded = jwtDecode(credentialResponse.credential);
+    const { name, email } = decoded;
+    const user = { name, email, password: "fromGoogleLogin", verified: true };
+    console.log(`Google Login Success: Name - ${name}, Email - ${email}`);
+    const url = `${BACKEND_URL}/User-Data/create`;
+    axios
+      .post(url, user)
+      .then((res) => {
+        if (res.status === 200) {
+          console.log(res.data);
+        }
+        navigate("/home", {
+          state: { email: user.email },
+        });
+      })
+      .catch((err) => {
+        if (err.response && err.response.status === 400) {
+          console.log(err.response.data);
+          setModalMessage(err.response.data); // Set error message
+          setShowModal(true); // Show the modal on error
+        }
+      });
+    setLoading(false);
+  };
+
+  const handleGoogleSuccessLogin = (credentialResponse) => {
+    setLoading(true);
+    const decoded = jwtDecode(credentialResponse.credential);
+    const { name, email } = decoded;
+    const user = { name, email, password: "fromGoogleLogin", verified: true };
+    console.log(`Google Login Success: Name - ${name}, Email - ${email}`);
+    navigate("/home", {
+      state: { email: user.email },
+    });
+    setLoading(false);
+  };
+
+  const buttonStyle = {
+    zIndex: showSignUp ? -1000 : "auto",
+  };
+
   return (
     <div>
       {loading && <Loading />}
@@ -202,21 +248,7 @@ function SigninAndSignupPage() {
                 <div className="form-container flibber-form">
                   <form onSubmit={handleSignUpSubmit}>
                     <h1>Sign Up</h1>
-                    <div className="social-icons">
-                      <div className="icon link">
-                        <i className="fab fa-google-plus-g"></i>
-                      </div>
-                      <div className="icon link">
-                        <i className="fab fa-facebook-f"></i>
-                      </div>
-                      <div className="icon link">
-                        <i className="fab fa-github"></i>
-                      </div>
-                      <div className="icon link">
-                        <i className="fab fa-linkedin-in"></i>
-                      </div>
-                    </div>
-                    <span>or use your email for registration</span>
+                    <br />
                     <input
                       type="text"
                       placeholder="Name"
@@ -255,6 +287,19 @@ function SigninAndSignupPage() {
                     <button type="submit" style={{ zIndex: "100" }}>
                       Sign Up
                     </button>
+                    <br />
+                    <span>or use your email for registration</span>
+                    <div className="social-icons">
+                      <div className="icon link" style={{ zIndex: "1000" }}>
+                        <GoogleLogin
+                          onSuccess={handleGoogleSuccess}
+                          onError={() => {
+                            console.log("Login Failed");
+                          }}
+                        />
+                      </div>
+                    </div>
+
                     <div style={{ paddingLeft: "12px", zIndex: "100" }}>
                       Already have an account?
                       <b
@@ -268,24 +313,21 @@ function SigninAndSignupPage() {
                 </div>
                 <div
                   className="form-container gibber-form"
-                  style={{
-                    opacity: showSignUp ? 0 : 1,
-                  }}
+                  // style={{
+                  //   opacity: showSignUp ? 0 : 1,
+                  // }}
+                  style={buttonStyle}
                 >
                   <form onSubmit={handleSignInSubmit}>
                     <h1>Sign In</h1>
                     <div className="social-icons">
                       <div className="icon link">
-                        <i className="fab fa-google-plus-g"></i>
-                      </div>
-                      <div className="icon link">
-                        <i className="fab fa-facebook-f"></i>
-                      </div>
-                      <div className="icon link">
-                        <i className="fab fa-github"></i>
-                      </div>
-                      <div className="icon link">
-                        <i className="fab fa-linkedin-in"></i>
+                        <GoogleLogin
+                          onSuccess={handleGoogleSuccessLogin}
+                          onFailure={() => {
+                            console.log("Login Failed");
+                          }}
+                        />
                       </div>
                     </div>
                     <span>or use your email password</span>
@@ -317,7 +359,9 @@ function SigninAndSignupPage() {
                     >
                       Forgot Your Password?
                     </div>
-                    <button type="submit">Sign In</button>
+                    <button type="submit" style={buttonStyle}>
+                      Sign In
+                    </button>
                     <br />
                     <div style={{ paddingLeft: "15px" }}>
                       Don't have an account?
@@ -342,16 +386,12 @@ function SigninAndSignupPage() {
                   <h1>Sign Up</h1>
                   <div className="social-icons">
                     <div className="icon link">
-                      <i className="fab fa-google-plus-g"></i>
-                    </div>
-                    <div className="icon link">
-                      <i className="fab fa-facebook-f"></i>
-                    </div>
-                    <div className="icon link">
-                      <i className="fab fa-github"></i>
-                    </div>
-                    <div className="icon link">
-                      <i className="fab fa-linkedin-in"></i>
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => {
+                          console.log("Login Failed");
+                        }}
+                      />
                     </div>
                   </div>
                   <span>or use your email for registration</span>
@@ -395,16 +435,12 @@ function SigninAndSignupPage() {
                   <h1>Sign In</h1>
                   <div className="social-icons">
                     <div className="icon link">
-                      <i className="fab fa-google-plus-g"></i>
-                    </div>
-                    <div className="icon link">
-                      <i className="fab fa-facebook-f"></i>
-                    </div>
-                    <div className="icon link">
-                      <i className="fab fa-github"></i>
-                    </div>
-                    <div className="icon link">
-                      <i className="fab fa-linkedin-in"></i>
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccessLogin}
+                        onError={() => {
+                          console.log("Login Failed");
+                        }}
+                      />
                     </div>
                   </div>
                   <span>or use your email password</span>

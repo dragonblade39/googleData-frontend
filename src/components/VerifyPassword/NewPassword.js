@@ -4,7 +4,8 @@ import axios from "axios";
 import Modal from "../Modal/Modal";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import Loading from "../../Loading/Loading"; // Import the Loading component
+import Loading from "../Loading/Loading"; // Import the Loading component
+import { BACKEND_URL } from "../Constants/Constants";
 
 function NewPassword() {
   const navigate = useNavigate();
@@ -42,8 +43,7 @@ function NewPassword() {
     if (newPassword === confirmPassword) {
       const update = { email: email, password: newPassword };
       //const url = "http://localhost:5500/User-Data/updatePassword";
-      const url =
-        "https://googledata-backend.onrender.com/User-Data/updatePassword";
+      const url = `${BACKEND_URL}/User-Data/updatePassword`;
       try {
         const response = await axios.post(url, update);
         if (response.status === 200) {

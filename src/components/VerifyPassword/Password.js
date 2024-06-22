@@ -3,7 +3,7 @@ import "../Verification/Verification.css";
 import axios from "axios";
 import Modal from "../Modal/Modal";
 import { useNavigate } from "react-router-dom";
-import Loading from "../../Loading/Loading"; // Import the Loading component
+import Loading from "../Loading/Loading"; // Import the Loading component
 import { BACKEND_URL } from "../Constants/Constants";
 
 function Password() {
