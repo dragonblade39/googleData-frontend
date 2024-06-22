@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../Verification/Verification.css";
 import axios from "axios";
 import Modal from "../Modal/Modal";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { BACKEND_URL } from "../Constants/Constants";
 
 function NewPassword() {
@@ -23,14 +22,12 @@ function NewPassword() {
   }, [email, navigate]);
 
   useEffect(() => {
-    // Prevent pinch zooming on mobile browsers
     const handleTouchStart = (event) => {
       if (event.touches.length > 1) {
         event.preventDefault();
       }
     };
 
-    // Prevent double tap zooming on mobile browsers
     let lastTouchEnd = 0;
     const handleTouchEnd = (event) => {
       const now = new Date().getTime();
@@ -65,16 +62,31 @@ function NewPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading state to true
 
-    // Check if passwords match
+    // Validate password complexity
+    const passwordRegex =
+      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      setModalMessage(
+        "Password must contain at least 8 characters including one uppercase letter, one lowercase letter, one digit, and one special character."
+      );
+      setShowModal(true);
+      return;
+    }
+
+    setLoading(true);
+
     if (newPassword === confirmPassword) {
       const update = { email: email, password: newPassword };
-      //const url = "http://localhost:5500/User-Data/updatePassword";
       const url = `${BACKEND_URL}/User-Data/updatePassword`;
+
       try {
         const response = await axios.post(url, update);
+
         if (response.status === 200) {
+          await axios.post(`${BACKEND_URL}/User-Data/changedpassword`, {
+            email: email,
+          });
           setModalMessage("Password Updated");
           setShowModal(true);
           navigate("/home", { state: { email: email } });
@@ -83,18 +95,16 @@ function NewPassword() {
           setShowModal(true);
         }
       } catch (error) {
-        // Handle any errors
         console.error("Error updating password:", error);
         setModalMessage("Error updating password. Please try again later.");
         setShowModal(true);
       }
     } else {
-      // Show error message if passwords don't match
       setModalMessage("Passwords do not match. Please try again.");
       setShowModal(true);
     }
 
-    setLoading(false); // Set loading state to false
+    setLoading(false);
   };
 
   return (
@@ -117,7 +127,7 @@ function NewPassword() {
               style={{ cursor: loading ? "not-allowed" : "auto" }}
             />
             <input
-              type="text"
+              type="password"
               placeholder="Confirm New Password"
               name="confirmPassword"
               value={confirmPassword}

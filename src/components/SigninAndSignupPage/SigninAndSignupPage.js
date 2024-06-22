@@ -254,31 +254,44 @@ function SigninAndSignupPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleGoogleSuccess = (credentialResponse) => {
+  const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
-    const decoded = jwtDecode(credentialResponse.credential);
-    const { name, email } = decoded;
-    const user = { name, email, password: "fromGoogleLogin", verified: true };
-    console.log(`Google Login Success: Name - ${name}, Email - ${email}`);
-    const url = `${BACKEND_URL}/User-Data/create`;
-    axios
-      .post(url, user)
-      .then((res) => {
-        if (res.status === 200) {
-          console.log(res.data);
+
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+      const { name, email } = decoded;
+      const user = { name, email, password: "fromGoogleLogin", verified: true };
+      console.log(`Google Login Success: Name - ${name}, Email - ${email}`);
+
+      const url = `${BACKEND_URL}/User-Data/create`;
+      const createUserResponse = await axios.post(url, user);
+
+      if (createUserResponse.status === 200) {
+        console.log(createUserResponse.data);
+
+        const welcomeResponse = await axios.post(
+          `${BACKEND_URL}/User-Data/welcome`,
+          { email: user.email }
+        );
+
+        if (welcomeResponse.status === 200) {
+          console.log(welcomeResponse.data);
         }
-        navigate("/home", {
-          state: { email: user.email },
-        });
-      })
-      .catch((err) => {
-        if (err.response && err.response.status === 400) {
-          console.log(err.response.data);
-          setModalMessage(err.response.data);
-          setShowModal(true);
-        }
+      }
+      navigate("/home", {
+        state: { email: user.email },
       });
-    setLoading(false);
+    } catch (err) {
+      if (err.response && err.response.status === 400) {
+        console.log(err.response.data);
+        setModalMessage(err.response.data);
+        setShowModal(true);
+      } else {
+        console.error("Error in handleGoogleSuccess:", err);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSuccessLogin = async (credentialResponse) => {

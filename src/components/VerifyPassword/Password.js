@@ -57,11 +57,10 @@ function Password() {
       otp += chars[Math.floor(Math.random() * chars.length)];
     }
     //const url = "http://localhost:5500/User-Data/otp";
-    const url = `${BACKEND_URL}/User-Data/otp`;
     const botp = { otp: otp, email: emailInput };
-
     try {
-      await axios.post(url, botp);
+      await axios.post(`${BACKEND_URL}/User-Data/forgotpasswordemail`, botp);
+
       navigate("/verificationForgotPassword", {
         state: { email: emailInput, otp: otp },
       });

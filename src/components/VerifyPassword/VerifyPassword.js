@@ -12,6 +12,8 @@ function VerifyPassword() {
   const [showModal, setShowModal] = useState(false);
   const [Otp, setOtp] = useState(location.state ? location.state.otp : null);
   const [loading, setLoading] = useState(false);
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(30); // Initially set to 30 seconds
   const navigate = useNavigate();
 
   const email = location.state ? location.state.email : null;
@@ -21,6 +23,10 @@ function VerifyPassword() {
       navigate("/");
     }
   }, [email, navigate]);
+
+  useEffect(() => {
+    setOtp(location.state ? location.state.otp : null);
+  }, [location.state]);
 
   useEffect(() => {
     const handleTouchStart = (event) => {
@@ -50,8 +56,16 @@ function VerifyPassword() {
   }, []);
 
   useEffect(() => {
-    setOtp(location.state ? location.state.otp : null);
-  }, [location.state]);
+    if (resendCountdown > 0) {
+      const intervalId = setInterval(() => {
+        setResendCountdown((prevCount) => prevCount - 1);
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    } else {
+      setResendDisabled(false);
+    }
+  }, [resendCountdown]);
 
   const handleInputChange = (e) => {
     setOtpInput(e.target.value);
@@ -66,16 +80,15 @@ function VerifyPassword() {
     for (let i = 0; i < 6; i++) {
       otp += chars[Math.floor(Math.random() * chars.length)];
     }
-    //const url = "http://localhost:5500/User-Data/otp";
-    const url = `${BACKEND_URL}/User-Data/otp`;
     const botp = { otp: otp, email: email };
 
     try {
-      await axios.post(url, botp);
+      await axios.post(`${BACKEND_URL}/User-Data/forgotpasswordemail`, botp);
       setOtp(otp);
       setLoading(false);
       setShowModal(true);
       setVerificationResult("OTP Sent Successfully!!");
+      startResendCountdown(); // Start the countdown after sending OTP
     } catch (err) {
       console.log(err.message);
       setLoading(false);
@@ -84,22 +97,25 @@ function VerifyPassword() {
     }
   };
 
+  const startResendCountdown = () => {
+    setResendDisabled(true);
+    setResendCountdown(30); // Reset the countdown to 30 seconds
+  };
+
   const resend = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    await generateOTP();
+    if (resendCountdown <= 0) {
+      setLoading(true);
+      await generateOTP();
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        //"http://localhost:5500/User-Data/data",
-        `${BACKEND_URL}/User-Data/data`,
-        {
-          email: email,
-        }
-      );
+      const response = await axios.post(`${BACKEND_URL}/User-Data/data`, {
+        email: email,
+      });
       console.log("User data:", response.data);
       try {
         const isOtpValid = otpInput === Otp;
@@ -108,7 +124,6 @@ function VerifyPassword() {
         console.log("OTP match:", isOtpValid);
         if (isOtpValid) {
           const updateResponse = await axios.post(
-            // "http://localhost:5500/User-Data/update",
             `${BACKEND_URL}/User-Data/update`,
             {
               email: email,
@@ -154,18 +169,32 @@ function VerifyPassword() {
               disabled={loading}
               style={{ cursor: loading ? "not-allowed" : "auto" }}
             />
-            <button type="submit" disabled={loading}>
+            <button
+              type="submit"
+              style={{ cursor: loading ? "not-allowed" : "pointer" }}
+              disabled={loading}
+            >
               {loading ? "Loading . . ." : "Verify"}
             </button>
+
             <br />
             <div style={{ paddingLeft: "12px", zIndex: "100" }}>
               Didn't receive an OTP?
-              <b
-                style={{ paddingLeft: "60px", cursor: "pointer" }}
-                onClick={resend}
-              >
-                Resend
-              </b>
+              <div style={{ zIndex: "100" }}>
+                {resendCountdown > 0 ? (
+                  `Resend available in ${resendCountdown}`
+                ) : (
+                  <b
+                    style={{
+                      paddingLeft: "60px",
+                      cursor: resendDisabled ? "not-allowed" : "pointer",
+                    }}
+                    onClick={resend}
+                  >
+                    Resend
+                  </b>
+                )}
+              </div>
             </div>
           </form>
         </div>

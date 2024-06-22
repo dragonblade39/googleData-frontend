@@ -5,26 +5,27 @@ import axios from "axios";
 import Modal from "../Modal/Modal";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../Constants/Constants";
+
 function Verification() {
   const location = useLocation();
   const [otpInput, setOtpInput] = useState("");
   const [verificationResult, setVerificationResult] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [Otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [resendDisabled, setResendDisabled] = useState(true); // Initially true to start countdown
+  const [resendCountdown, setResendCountdown] = useState(30);
 
   const email = location.state ? location.state.email : null;
 
   useEffect(() => {
-    // Prevent pinch zooming on mobile browsers
     const handleTouchStart = (event) => {
       if (event.touches.length > 1) {
         event.preventDefault();
       }
     };
 
-    // Prevent double tap zooming on mobile browsers
     let lastTouchEnd = 0;
     const handleTouchEnd = (event) => {
       const now = new Date().getTime();
@@ -55,53 +56,66 @@ function Verification() {
     setOtp(location.state ? location.state.otp : null);
   }, [location.state]);
 
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const intervalId = setInterval(() => {
+        setResendCountdown((prevCount) => prevCount - 1);
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    } else {
+      setResendDisabled(false);
+    }
+  }, [resendCountdown]);
+
   const handleInputChange = (e) => {
     setOtpInput(e.target.value);
   };
 
-  const generateOTP = () => {
+  const generateOTP = async () => {
     const chars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let otp = "";
     for (let i = 0; i < 6; i++) {
       otp += chars[Math.floor(Math.random() * chars.length)];
     }
-    //const url = "http://localhost:5500/User-Data/otp";
     const url = `${BACKEND_URL}/User-Data/otp`;
     const botp = { otp: otp, email: email };
-    axios
-      .post(url, botp)
-      .then((res) => {
-        if (res.status === 200) {
-          console.log(botp);
-        }
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    try {
+      const res = await axios.post(url, botp);
+      if (res.status === 200) {
+        console.log(botp);
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
     setOtp(otp);
+  };
+
+  const startResendCountdown = () => {
+    setResendDisabled(true);
+    setResendCountdown(30);
   };
 
   const resend = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading state to true
-    generateOTP();
-    setVerificationResult("OTP Resent Successfully!!");
-    setShowModal(true);
-    setLoading(false); // Set loading state to false
+    if (resendCountdown <= 0) {
+      setLoading(true);
+      await generateOTP();
+      setVerificationResult("OTP Resent Successfully!!");
+      startResendCountdown();
+      setShowModal(true);
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading state to true
+    setLoading(true);
     try {
-      const response = await axios.post(
-        // "http://localhost:5500/User-Data/data",
-        `${BACKEND_URL}/User-Data/data`,
-        {
-          email: email,
-        }
-      );
+      const response = await axios.post(`${BACKEND_URL}/User-Data/data`, {
+        email: email,
+      });
       console.log("User data:", response.data);
 
       if (response.data.verified === false) {
@@ -112,12 +126,31 @@ function Verification() {
           console.log("OTP match:", isOtpValid);
           if (isOtpValid) {
             const updateResponse = await axios.post(
-              //"http://localhost:5500/User-Data/update",
               `${BACKEND_URL}/User-Data/update`,
               {
                 email: email,
               }
             );
+            axios
+              .post(`${BACKEND_URL}/User-Data/welcome`, { email: email })
+              .then((res) => {
+                console.log("Welcome response:", res.data);
+                if (res.status === 200) {
+                  console.log("Welcome message sent successfully.");
+                } else {
+                  console.log("Unexpected status code:", res.status);
+                }
+              })
+              .catch((err) => {
+                console.error("Error sending welcome message:", err);
+                if (err.response && err.response.status === 400) {
+                  console.log("Error response data:", err.response.data);
+                  setShowModal(true);
+                } else {
+                  console.log("Unexpected error:", err);
+                }
+              });
+
             console.log(updateResponse.data.message);
             setVerificationResult("OTP verified successfully.");
             setShowModal(true);
@@ -143,7 +176,7 @@ function Verification() {
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
-    setLoading(false); // Set loading state to false
+    setLoading(false);
   };
 
   const handleCloseModal = () => {
@@ -168,18 +201,32 @@ function Verification() {
               disabled={loading}
               style={{ cursor: loading ? "not-allowed" : "auto" }}
             />
-            <button type="submit" disabled={loading}>
+            <button
+              type="submit"
+              style={{ cursor: loading ? "not-allowed" : "pointer" }}
+              disabled={loading}
+            >
               {loading ? "Loading . . ." : "Verify"}
             </button>
+
             <br />
             <div style={{ paddingLeft: "12px", zIndex: "100" }}>
               Didn't receive an OTP?
-              <b
-                style={{ paddingLeft: "60px", cursor: "pointer" }}
-                onClick={resend}
-              >
-                Resend
-              </b>
+              <div style={{ zIndex: "100" }}>
+                {resendCountdown > 0 ? (
+                  `Resend available in ${resendCountdown}`
+                ) : (
+                  <b
+                    style={{
+                      paddingLeft: "60px",
+                      cursor: resendDisabled ? "not-allowed" : "pointer",
+                    }}
+                    onClick={resend}
+                  >
+                    Resend
+                  </b>
+                )}
+              </div>
             </div>
           </form>
         </div>
