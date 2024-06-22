@@ -84,7 +84,6 @@ function Verification() {
     try {
       const res = await axios.post(url, botp);
       if (res.status === 200) {
-        console.log(botp);
       }
     } catch (err) {
       console.log(err.message);
@@ -121,9 +120,6 @@ function Verification() {
       if (response.data.verified === false) {
         try {
           const isOtpValid = otpInput === Otp;
-          console.log("Entered OTP:", otpInput);
-          console.log("Stored OTP:", Otp);
-          console.log("OTP match:", isOtpValid);
           if (isOtpValid) {
             const updateResponse = await axios.post(
               `${BACKEND_URL}/User-Data/update`,
@@ -134,9 +130,7 @@ function Verification() {
             axios
               .post(`${BACKEND_URL}/User-Data/welcome`, { email: email })
               .then((res) => {
-                console.log("Welcome response:", res.data);
                 if (res.status === 200) {
-                  console.log("Welcome message sent successfully.");
                 } else {
                   console.log("Unexpected status code:", res.status);
                 }

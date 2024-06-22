@@ -119,9 +119,6 @@ function VerifyPassword() {
       console.log("User data:", response.data);
       try {
         const isOtpValid = otpInput === Otp;
-        console.log("Entered OTP:", otpInput);
-        console.log("Stored OTP:", Otp);
-        console.log("OTP match:", isOtpValid);
         if (isOtpValid) {
           const updateResponse = await axios.post(
             `${BACKEND_URL}/User-Data/update`,
