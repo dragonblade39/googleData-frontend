@@ -28,6 +28,35 @@ function SigninAndSignupPage() {
   const [modalMessage, setModalMessage] = useState(""); // Add state for modal message
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Prevent pinch zooming on mobile browsers
+    const handleTouchStart = (event) => {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    };
+
+    // Prevent double tap zooming on mobile browsers
+    let lastTouchEnd = 0;
+    const handleTouchEnd = (event) => {
+      const now = new Date().getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    };
+
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    document.addEventListener("touchend", handleTouchEnd, false);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
+
   const handleToggleForm = () => {
     setShowSignUp(!showSignUp);
   };
@@ -105,14 +134,14 @@ function SigninAndSignupPage() {
   };
 
   const handleSignUpSubmit = (e) => {
-    setLoading(true);
     e.preventDefault();
+    setLoading(true); // Start loading indicator
+
     const isValid =
       Object.values(signUpErrors).every((error) => error === "") &&
       signUpForm.password;
+
     if (isValid) {
-      console.log("Sign Up Form Data:", signUpForm);
-      //const url = "http://localhost:5500/User-Data/create";
       const url = `${BACKEND_URL}/User-Data/create`;
       axios
         .post(url, signUpForm)
@@ -132,13 +161,15 @@ function SigninAndSignupPage() {
             setModalMessage(err.response.data); // Set error message
             setShowModal(true); // Show the modal on error
           }
+        })
+        .finally(() => {
+          setLoading(false); // Stop loading indicator
         });
     } else {
-      console.log("Form has errors. Cannot submit.");
       setModalMessage("Please fill out all fields correctly."); // Set error message
       setShowModal(true); // Show the modal if form is invalid
+      setLoading(false); // Stop loading indicator
     }
-    setLoading(false);
   };
 
   const handleForgotPassword = () => {
@@ -146,24 +177,20 @@ function SigninAndSignupPage() {
   };
 
   const handleSignInSubmit = async (e) => {
-    setLoading(true);
-    // Mark the function as async
     e.preventDefault();
+    setLoading(true); // Start loading indicator
+
     const isValid = Object.values(signInErrors).every((error) => error === "");
+
     if (isValid) {
-      console.log("Sign In Form Data:", signInForm);
       try {
-        const response = await axios.post(
-          //"http://localhost:5500/User-Data/login",
-          `${BACKEND_URL}/User-Data/login`,
-          {
-            email: signInForm.email,
-            password: signInForm.password,
-          }
-        );
+        const response = await axios.post(`${BACKEND_URL}/User-Data/login`, {
+          email: signInForm.email,
+          password: signInForm.password,
+        });
         if (response.status === 200) {
           navigate("/home", {
-            state: { email: signInForm.email }, // Use signInForm.email instead of email
+            state: { email: signInForm.email },
           });
         }
         console.log("User data:", response.data);
@@ -171,13 +198,14 @@ function SigninAndSignupPage() {
         setModalMessage("Invalid Email or Password");
         setShowModal(true);
         console.error("Error:", error);
+      } finally {
+        setLoading(false); // Stop loading indicator
       }
     } else {
       setModalMessage("Enter All Fields to Log In");
       setShowModal(true);
-      console.log("Form has errors. Cannot submit.");
+      setLoading(false); // Stop loading indicator
     }
-    setLoading(false);
   };
 
   useEffect(() => {

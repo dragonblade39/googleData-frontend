@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../Verification/Verification.css";
 import axios from "axios";
 import Modal from "../Modal/Modal";
@@ -16,6 +16,35 @@ function Password() {
   const handleInputChange = (e) => {
     setEmailInput(e.target.value);
   };
+
+  useEffect(() => {
+    // Prevent pinch zooming on mobile browsers
+    const handleTouchStart = (event) => {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    };
+
+    // Prevent double tap zooming on mobile browsers
+    let lastTouchEnd = 0;
+    const handleTouchEnd = (event) => {
+      const now = new Date().getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    };
+
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    document.addEventListener("touchend", handleTouchEnd, false);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
 
   const handleCloseModal = () => {
     setShowModal(false);
