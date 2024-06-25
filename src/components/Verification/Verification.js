@@ -11,7 +11,6 @@ function Verification() {
   const [otpInput, setOtpInput] = useState("");
   const [verificationResult, setVerificationResult] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [Otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [resendDisabled, setResendDisabled] = useState(true); // Initially true to start countdown
@@ -53,10 +52,6 @@ function Verification() {
   }, [email, navigate]);
 
   useEffect(() => {
-    setOtp(location.state ? location.state.otp : null);
-  }, [location.state]);
-
-  useEffect(() => {
     if (resendCountdown > 0) {
       const intervalId = setInterval(() => {
         setResendCountdown((prevCount) => prevCount - 1);
@@ -72,25 +67,6 @@ function Verification() {
     setOtpInput(e.target.value);
   };
 
-  const generateOTP = async () => {
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let otp = "";
-    for (let i = 0; i < 6; i++) {
-      otp += chars[Math.floor(Math.random() * chars.length)];
-    }
-    const url = `${BACKEND_URL}/User-Data/otp`;
-    const botp = { otp: otp, email: email };
-    try {
-      const res = await axios.post(url, botp);
-      if (res.status === 200) {
-      }
-    } catch (err) {
-      console.log(err.message);
-    }
-    setOtp(otp);
-  };
-
   const startResendCountdown = () => {
     setResendDisabled(true);
     setResendCountdown(30);
@@ -98,13 +74,30 @@ function Verification() {
 
   const resend = async (e) => {
     e.preventDefault();
+
     if (resendCountdown <= 0) {
       setLoading(true);
-      await generateOTP();
-      setVerificationResult("OTP Resent Successfully!!");
-      startResendCountdown();
-      setShowModal(true);
-      setLoading(false);
+
+      try {
+        const response = await axios.post(`${BACKEND_URL}/User-Data/data`, {
+          email: email,
+        });
+        const response1 = await axios.post(`${BACKEND_URL}/Otp-Data/otpstore`, {
+          email: response.data.email,
+          name: response.data.name,
+        });
+        if (response1.status === 200) {
+          setVerificationResult("OTP Resent Successfully!!");
+          startResendCountdown();
+        } else {
+          setVerificationResult("Failed to resend OTP");
+        }
+      } catch (error) {
+        setVerificationResult("Failed to resend OTP");
+      } finally {
+        setLoading(false);
+        setShowModal(true);
+      }
     }
   };
 
@@ -115,36 +108,14 @@ function Verification() {
       const response = await axios.post(`${BACKEND_URL}/User-Data/data`, {
         email: email,
       });
-      console.log("User data:", response.data);
 
       if (response.data.verified === false) {
         try {
-          const isOtpValid = otpInput === Otp;
-          if (isOtpValid) {
-            const updateResponse = await axios.post(
-              `${BACKEND_URL}/User-Data/update`,
-              {
-                email: email,
-              }
-            );
-            axios
-              .post(`${BACKEND_URL}/User-Data/welcome`, { email: email })
-              .then((res) => {
-                if (res.status === 200) {
-                } else {
-                  console.log("Unexpected status code:", res.status);
-                }
-              })
-              .catch((err) => {
-                console.error("Error sending welcome message:", err);
-                if (err.response && err.response.status === 400) {
-                  console.log("Error response data:", err.response.data);
-                  setShowModal(true);
-                } else {
-                  console.log("Unexpected error:", err);
-                }
-              });
-
+          const updateResponse = await axios.post(
+            `${BACKEND_URL}/User-Data/update`,
+            { email: email, otp: otpInput }
+          );
+          if (response.status === 200) {
             console.log(updateResponse.data.message);
             setVerificationResult("OTP verified successfully.");
             setShowModal(true);

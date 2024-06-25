@@ -63,7 +63,6 @@ function NewPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate password complexity
     const passwordRegex =
       /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/;
     if (!passwordRegex.test(newPassword)) {
@@ -84,12 +83,11 @@ function NewPassword() {
         const response = await axios.post(url, update);
 
         if (response.status === 200) {
-          await axios.post(`${BACKEND_URL}/User-Data/changedpassword`, {
-            email: email,
-          });
           setModalMessage("Password Updated");
           setShowModal(true);
-          navigate("/home", { state: { email: email } });
+          setTimeout(() => {
+            navigate("/home", { state: { email: email } });
+          }, 1000);
         } else {
           setModalMessage("Error Updating Password");
           setShowModal(true);

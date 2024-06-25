@@ -24,7 +24,6 @@ function SigninAndSignupPage() {
   const [signInForm, setSignInForm] = useState({ email: "", password: "" });
   const [signUpErrors, setSignUpErrors] = useState({});
   const [signInErrors, setSignInErrors] = useState({});
-  const [Otp, setOtp] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const navigate = useNavigate();
@@ -107,62 +106,6 @@ function SigninAndSignupPage() {
     setSignInErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
   };
 
-  const generateOTP = () => {
-    setLoading(true);
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let otp = "";
-    for (let i = 0; i < 6; i++) {
-      otp += chars[Math.floor(Math.random() * chars.length)];
-    }
-    //const url = "http://localhost:5500/User-Data/otp";
-    const url = `${BACKEND_URL}/User-Data/otp`;
-    const botp = { otp: otp, email: signUpForm.email };
-    axios
-      .post(url, botp)
-      .then((res) => {
-        if (res.status === 200) {
-          console.log(botp);
-        }
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-    setOtp(otp);
-    setLoading(false);
-  };
-
-  const generateOTP1 = async () => {
-    setModalMessage("OTP sent to your registered email. Please verify.");
-    setShowModal(true);
-    setLoading(true);
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let otp = "";
-    for (let i = 0; i < 6; i++) {
-      otp += chars[Math.floor(Math.random() * chars.length)];
-    }
-    //const url = "http://localhost:5500/User-Data/otp";
-    const url = `${BACKEND_URL}/User-Data/otp`;
-    const botp = { otp: otp, email: signInForm.email };
-    await axios
-      .post(url, botp)
-      .then((res) => {
-        if (res.status === 200) {
-          console.log(botp);
-
-          navigate("/verification", {
-            state: { email: signInForm.email, otp: otp },
-          });
-        }
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-    setOtp(otp);
-    setLoading(false);
-  };
-
   const handleSignUpSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
@@ -176,9 +119,8 @@ function SigninAndSignupPage() {
       axios
         .post(url, signUpForm)
         .then((res) => {
+          setLoading(false);
           if (res.status === 200) {
-            console.log(res.data);
-            generateOTP();
             setModalMessage(
               `Please verify your email address with OTP sent to your mail.`
             );
@@ -186,14 +128,12 @@ function SigninAndSignupPage() {
           }
         })
         .catch((err) => {
+          setLoading(false);
           if (err.response && err.response.status === 400) {
-            console.log(err.response.data);
+            console.log("Error response from server:", err.response.data);
             setModalMessage(err.response.data);
             setShowModal(true);
           }
-        })
-        .finally(() => {
-          setLoading(false);
         });
     } else {
       setModalMessage("Please fill out all fields correctly.");
@@ -219,16 +159,29 @@ function SigninAndSignupPage() {
           password: signInForm.password,
         });
 
+        const response1 = await axios.post(`${BACKEND_URL}/User-Data/data`, {
+          email: signInForm.email,
+        });
+
         if (response.status === 200) {
           navigate("/home", {
             state: { email: signInForm.email },
           });
         } else if (response.status === 202) {
-          console.log("Successfull");
-          await generateOTP1();
-        }
+          setModalMessage("Account not verified!! Continue to verify");
+          setShowModal(true);
 
-        console.log("User data:", response.data);
+          await axios.post(`${BACKEND_URL}/Otp-Data/otpstore`, {
+            email: signInForm.email,
+            name: response1.data.name,
+          });
+
+          setTimeout(() => {
+            navigate("/verification", {
+              state: { email: signInForm.email },
+            });
+          }, 1000);
+        }
       } catch (error) {
         setModalMessage("Invalid Email or Password");
         setShowModal(true);
@@ -267,25 +220,21 @@ function SigninAndSignupPage() {
       const createUserResponse = await axios.post(url, user);
 
       if (createUserResponse.status === 200) {
-        console.log(createUserResponse.data);
-
-        const welcomeResponse = await axios.post(
-          `${BACKEND_URL}/User-Data/welcome`,
-          { email: user.email }
-        );
-
-        if (welcomeResponse.status === 200) {
-          console.log(welcomeResponse.data);
-        }
+        console.log(decoded);
+        navigate("/home", {
+          state: { email: user.email },
+        });
       }
-      navigate("/home", {
-        state: { email: user.email },
-      });
     } catch (err) {
       if (err.response && err.response.status === 400) {
-        console.log(err.response.data);
-        setModalMessage(err.response.data);
-        setShowModal(true);
+        if (err.response.data === "Email already exists.") {
+          setModalMessage("Email already exists. Please log in.");
+          setShowModal(true);
+        } else {
+          console.log(err.response.data);
+          setModalMessage(err.response.data);
+          setShowModal(true);
+        }
       } else {
         console.error("Error in handleGoogleSuccess:", err);
       }
@@ -310,9 +259,6 @@ function SigninAndSignupPage() {
         navigate("/home", {
           state: { email: email1 },
         });
-      } else if (response.status === 202) {
-        console.log("Successfull");
-        await generateOTP1();
       }
 
       console.log("User data:", response.data);
@@ -660,7 +606,7 @@ function SigninAndSignupPage() {
             "Please verify your email address with OTP sent to your mail."
           ) {
             navigate("/verification", {
-              state: { email: signUpForm.email, otp: Otp },
+              state: { email: signUpForm.email },
             });
           }
         }}

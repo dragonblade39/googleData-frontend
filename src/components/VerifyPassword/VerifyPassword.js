@@ -10,7 +10,6 @@ function VerifyPassword() {
   const [otpInput, setOtpInput] = useState("");
   const [verificationResult, setVerificationResult] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [Otp, setOtp] = useState(location.state ? location.state.otp : null);
   const [loading, setLoading] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(30); // Initially set to 30 seconds
@@ -23,10 +22,6 @@ function VerifyPassword() {
       navigate("/");
     }
   }, [email, navigate]);
-
-  useEffect(() => {
-    setOtp(location.state ? location.state.otp : null);
-  }, [location.state]);
 
   useEffect(() => {
     const handleTouchStart = (event) => {
@@ -71,76 +66,71 @@ function VerifyPassword() {
     setOtpInput(e.target.value);
   };
 
-  const generateOTP = async () => {
-    setLoading(true);
-
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let otp = "";
-    for (let i = 0; i < 6; i++) {
-      otp += chars[Math.floor(Math.random() * chars.length)];
-    }
-    const botp = { otp: otp, email: email };
-
-    try {
-      await axios.post(`${BACKEND_URL}/User-Data/forgotpasswordemail`, botp);
-      setOtp(otp);
-      setLoading(false);
-      setShowModal(true);
-      setVerificationResult("OTP Sent Successfully!!");
-      startResendCountdown(); // Start the countdown after sending OTP
-    } catch (err) {
-      console.log(err.message);
-      setLoading(false);
-      setVerificationResult("Failed to send OTP. Please try again.");
-      setShowModal(true);
-    }
-  };
-
   const startResendCountdown = () => {
     setResendDisabled(true);
     setResendCountdown(30); // Reset the countdown to 30 seconds
   };
 
+  // const resend = async (e) => {
+  //   e.preventDefault();
+  //   if (resendCountdown <= 0) {
+  //     setLoading(true);
+  //     //
+  //   }
+  // };
   const resend = async (e) => {
     e.preventDefault();
+
     if (resendCountdown <= 0) {
       setLoading(true);
-      await generateOTP();
+
+      try {
+        const response = await axios.post(`${BACKEND_URL}/User-Data/data`, {
+          email: email,
+        });
+        const response1 = await axios.post(`${BACKEND_URL}/Otp-Data/otpstore`, {
+          email: response.data.email,
+          name: response.data.name,
+        });
+        if (response1.status === 200) {
+          setVerificationResult("OTP Resent Successfully!!");
+          startResendCountdown();
+        } else {
+          setVerificationResult("Failed to resend OTP");
+        }
+      } catch (error) {
+        setVerificationResult("Failed to resend OTP");
+      } finally {
+        setLoading(false);
+        setShowModal(true);
+      }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${BACKEND_URL}/User-Data/data`, {
-        email: email,
-      });
-      console.log("User data:", response.data);
-      try {
-        const isOtpValid = otpInput === Otp;
-        if (isOtpValid) {
-          const updateResponse = await axios.post(
-            `${BACKEND_URL}/User-Data/update`,
-            {
-              email: email,
-            }
-          );
-          console.log(updateResponse.data.message);
+      const response1 = await axios.post(
+        `${BACKEND_URL}/User-Data/verifyForPasswordUpdate`,
+        { email: email, otp: otpInput }
+      );
+
+      if (response1.status === 200) {
+        setVerificationResult("OTP verified successfully.");
+        setShowModal(true);
+        setTimeout(() => {
           navigate("/newpassword", {
             state: { email: email },
           });
-        } else {
-          setVerificationResult("Invalid OTP");
-          setShowModal(true);
-        }
-      } catch (updateError) {
-        console.error("Error updating user verification status:", updateError);
-        setVerificationResult("Error Verifying User");
+        }, 1000);
+      } else {
+        setVerificationResult("Invalid OTP");
         setShowModal(true);
       }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
+    } catch (updateError) {
+      console.error("Error updating user verification status:", updateError);
+      setVerificationResult("Error Verifying User");
+      setShowModal(true);
     }
   };
 

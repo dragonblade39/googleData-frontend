@@ -47,30 +47,6 @@ function Password() {
     setShowModal(false);
   };
 
-  const generateOTP = async () => {
-    setLoading(true);
-
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let otp = "";
-    for (let i = 0; i < 6; i++) {
-      otp += chars[Math.floor(Math.random() * chars.length)];
-    }
-    //const url = "http://localhost:5500/User-Data/otp";
-    const botp = { otp: otp, email: emailInput };
-    try {
-      await axios.post(`${BACKEND_URL}/User-Data/forgotpasswordemail`, botp);
-
-      navigate("/verificationForgotPassword", {
-        state: { email: emailInput, otp: otp },
-      });
-      setLoading(false);
-    } catch (err) {
-      console.log(err.message);
-      setLoading(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -89,9 +65,26 @@ function Password() {
               email: email,
             }
           );
-          console.log(response.data);
-
-          await generateOTP();
+          if (response.status === 200) {
+            const response1 = await axios.post(
+              // "http://localhost:5500/User-Data/data",
+              `${BACKEND_URL}/User-Data/otpForPasswordUpdate`,
+              {
+                email: email,
+              }
+            );
+            if (response1.status === 200) {
+              setModalMessage(
+                "Please verify your email address with OTP sent to your mail."
+              );
+              setShowModal(true);
+              setTimeout(() => {
+                navigate("/verificationForgotPassword", {
+                  state: { email: email },
+                });
+              }, 1000);
+            }
+          }
         } else {
           setModalMessage("Enter a valid email to proceed!!");
           setShowModal(true);
