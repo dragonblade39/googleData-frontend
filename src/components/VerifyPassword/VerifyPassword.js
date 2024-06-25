@@ -111,6 +111,7 @@ function VerifyPassword() {
   };
 
   const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
     try {
       const response1 = await axios.post(
@@ -135,6 +136,7 @@ function VerifyPassword() {
       setVerificationResult("Error Verifying User");
       setShowModal(true);
     }
+    setLoading(false);
   };
 
   const handleCloseModal = () => {
