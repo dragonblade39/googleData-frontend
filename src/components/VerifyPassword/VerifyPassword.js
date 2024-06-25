@@ -88,10 +88,13 @@ function VerifyPassword() {
         const response = await axios.post(`${BACKEND_URL}/User-Data/data`, {
           email: email,
         });
-        const response1 = await axios.post(`${BACKEND_URL}/Otp-Data/otpstore`, {
-          email: response.data.email,
-          name: response.data.name,
-        });
+        const response1 = await axios.post(
+          `${BACKEND_URL}/User-Data/otpForPasswordUpdate`,
+          {
+            email: response.data.email,
+            name: response.data.name,
+          }
+        );
         if (response1.status === 200) {
           setVerificationResult("OTP Resent Successfully!!");
           startResendCountdown();
