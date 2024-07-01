@@ -89,7 +89,7 @@ function Home() {
     } catch (error) {
       console.error("Error uploading file:", error);
       setShowModal(true);
-      setModalMessage("Failed to upload file.", error);
+      setModalMessage(error);
     } finally {
       setLoading1(false);
     }
