@@ -214,7 +214,6 @@ function SigninAndSignupPage() {
       const decoded = jwtDecode(credentialResponse.credential);
       const { name, email } = decoded;
       const user = { name, email, password: "fromGoogleLogin", verified: true };
-      console.log(`Google Login Success: Name - ${name}, Email - ${email}`);
 
       const url = `${BACKEND_URL}/User-Data/create`;
       const createUserResponse = await axios.post(url, user);

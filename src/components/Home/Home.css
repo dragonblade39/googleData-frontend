@@ -1,4 +1,136 @@
-.logOutBtn {
+.Home {
+  text-align: center;
+  padding: 20px;
+}
+
+.formStyle {
+  background-color: white;
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+}
+
+.formStyle h2 {
+  margin-bottom: 20px;
+}
+
+.formStyle .form-control {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.formStyle .btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+.formStyle .btn:disabled {
+  background-color: #6c757d;
+}
+
+.uploaded {
+  background-color: white;
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 700px;
+}
+
+.uploaded h2 {
+  margin-bottom: 20px;
+}
+
+.output-div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.inner-div {
+  background-color: #e9ecef;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 5px;
+  width: 200px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.inner-div .title-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.inner-div .title-container h4 {
+  margin-right: 5px;
+}
+
+.inner-div .btn {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.inner-div .btn-primary {
+  background-color: #007bff;
+  border: none;
+  color: white;
+}
+
+.inner-div .btn-danger {
+  background-color: #dc3545;
+  border: none;
+  color: white;
+}
+
+.loader {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+  display: block;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: #fff;
+  font-size: 12px;
+  padding: 10px 40px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.submit-btn {
   background-color: #512da8;
   color: #fff;
   font-size: 12px;
@@ -10,4 +142,9 @@
   text-transform: uppercase;
   margin-top: 10px;
   cursor: pointer;
+}
+
+.choose-btn {
+  background-color: #512da8;
+  color: #fff;
 }
