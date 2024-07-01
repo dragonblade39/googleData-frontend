@@ -89,7 +89,7 @@ function Home() {
     } catch (error) {
       console.error("Error uploading file:", error);
       setShowModal(true);
-      setModalMessage("Failed to upload file.");
+      setModalMessage("Failed to upload file.", error);
     } finally {
       setLoading1(false);
     }
@@ -155,7 +155,7 @@ function Home() {
 
         <br />
         <button className="submit-btn" type="submit" disabled={loading}>
-          {loading1 ? <div className="loader"></div> : "Submit"}
+          {loading1 ? "Loading..." : "Submit"}
         </button>
       </form>
       <div className="uploaded">
