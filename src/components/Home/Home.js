@@ -85,13 +85,19 @@ function Home() {
         setShowModal(true);
         setModalMessage("Uploaded Successfully!!!");
         getPdfFiles();
+        setTitle("");
+        setFile(null);
       }
     } catch (error) {
       console.error("Error uploading file:", error);
       setShowModal(true);
-      setModalMessage(error);
+      setModalMessage(
+        "File present already with the same title. Please try again."
+      );
     } finally {
       setLoading1(false);
+      setTitle("");
+      setFile(null);
     }
   };
 
